@@ -21,12 +21,48 @@ async function evaluateAudioTranscription(audioFilePath) {
                 },
             },
             { 
-                text: "Transcreva o áudio e avalie se o texto está correto. De 0 a 10, como foi o texto em inglês? Forneça uma avaliação detalhada." 
+                text: `Transcreva o áudio e avalie a pronúncia em inglês de 0 a 10. 
+                
+                Responda SEMPRE no seguinte formato JSON:
+                {
+                    "transcricao": "transcrição do que foi dito",
+                    "nota": número de 0 a 10,
+                    "avaliacao": "avaliação detalhada da pronúncia",
+                    "pronuncia_correta": "se a nota for menor que 10, forneça a pronúncia correta usando notação fonética IPA ou uma explicação clara de como pronunciar corretamente"
+                }
+                
+                Mesmo que a nota seja 10, sempre inclua todos os campos no JSON.` 
             },
         ]);
 
         const response = await result.response;
-        return response.text();
+        const responseText = response.text();
+        
+        try {
+            // Tentar extrair JSON da resposta
+            const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                const evaluationData = JSON.parse(jsonMatch[0]);
+                return evaluationData;
+            } else {
+                // Fallback se não conseguir extrair JSON
+                return {
+                    transcricao: "Não foi possível extrair transcrição",
+                    nota: 0,
+                    avaliacao: responseText,
+                    pronuncia_correta: "Não disponível"
+                };
+            }
+        } catch (parseError) {
+            console.error("Erro ao fazer parse do JSON:", parseError);
+            // Fallback se não conseguir fazer parse do JSON
+            return {
+                transcricao: "Não foi possível extrair transcrição",
+                nota: 0,
+                avaliacao: responseText,
+                pronuncia_correta: "Não disponível"
+            };
+        }
 
     } catch (error) {
         console.error("Erro ao avaliar transcrição:", error);

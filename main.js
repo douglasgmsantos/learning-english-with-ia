@@ -75,14 +75,28 @@ client.on('message_create', async (message) => {
                 console.log('🔍 Transcrição feita com sucesso', transcription);
 
                 console.log('🔍 Iniciando avaliação...');
-                const evaluation = await evaluateAudioTranscription(filePath);
-                console.log('🔍 Avaliação feita com sucesso', evaluation);
+                const evaluationResult = await evaluateAudioTranscription(filePath);
+                console.log('🔍 Avaliação feita com sucesso', evaluationResult);
                 
-                // const transcription = await evaluateAudioTranscription(filePath);
-                // Enviar transcrição de volta
-                const responseMessage = `🎤 *Transcrição do áudio:*\n\n"${transcription}\n\n *Avaliação:*\n\n"${evaluation}""`;
+                // Construir mensagem de resposta
+                let responseMessage = `🎤 *Transcrição do áudio:*\n\n"${transcription}"\n\n📊 *Avaliação da Pronúncia:*\n\n`;
+                
+                if (typeof evaluationResult === 'object' && evaluationResult.nota !== undefined) {
+                    // Usar dados estruturados da avaliação
+                    responseMessage += `*Nota:* ${evaluationResult.nota}/10\n\n`;
+                    responseMessage += `*Avaliação:* ${evaluationResult.avaliacao}`;
+                    
+                    // Se a nota for menor que 10, incluir pronúncia correta
+                    if (evaluationResult.nota < 10 && evaluationResult.pronuncia_correta && evaluationResult.pronuncia_correta !== "Não disponível") {
+                        responseMessage += `\n\n🗣️ *Pronúncia Correta:*\n\n${evaluationResult.pronuncia_correta}`;
+                    }
+                } else {
+                    // Fallback para formato antigo (string simples)
+                    responseMessage += evaluationResult;
+                }
+                
                 await message.reply(responseMessage);
-                console.log('✅ Áudio transcrito com sucesso');
+                console.log('✅ Áudio transcrito e avaliado com sucesso');
                 
                 // Limpar arquivo temporário
                 fs.unlinkSync(filePath);
