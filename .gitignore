@@ -1,0 +1,27 @@
+# Dependências
+node_modules/
+
+# Arquivos de ambiente (contém chaves de API)
+.env
+
+# Arquivos temporários de transcrição
+temp/
+
+# Cache do WhatsApp Web
+.wwebjs_cache/
+.wwebjs_auth/
+
+# Logs
+*.log
+logs/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# NPM
+npm-debug.log* 
